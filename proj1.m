@@ -42,26 +42,31 @@ n0 = [1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1];
 letter_ = 3; % spacing between letters
 word_ = 7; % spacing between words
 
-A=[A zeros(1, letter_)]; % padding with 3 zeros to join with another letter
-AB = cat(2, A, B); % created word AB
-B = [B zeros(1, letter_)];
-BC = cat(2, B, C);
+% A=[A zeros(1, letter_)]; % padding with 3 zeros to join with another letter
+% AB = cat(2, A, B); % created word AB
+% B = [B zeros(1, letter_)];
+% BC = cat(2, B, C); % created word BC
+% 
+% AB = [AB zeros(1, word_)];
+% AB_BC = cat(2, AB, BC) % sentence "AB BC", we'll use this as our sentence.
+% mySentence = AB_BC;
+% myWord= BC;
+myLetter = A;
 
-AB = [AB zeros(1, word_)];
-AB_BC = cat(2, AB, BC) % sentence "AB BC", we'll use this as our sentence.
-mySentence = AB_BC;
-
+%*********MAIN CODE
 % bpsk modulation, changing 1 -> -1, 0 -> 1
 bpskModulator = comm.BPSKModulator;
-modData = bpskModulator(AB_BC');
-bpsk_AB_BC = real(modData');
-disp(bpsk_AB_BC);
+modData = bpskModulator(myLetter');
+bpsk_myLetter= real(modData');
 
 % creating and showing bpsk modulated signal from a series of bits
-[bpsk_AB_BC, t] = makeSignal(bpsk_AB_BC);
+[bpsk_myLetter, t] = makeSignal(bpsk_myLetter);
+carrier = 2*cos(2*pi*2*t);
+x = bpsk_myLetter.*carrier; % x is transmitted signal
 subplot(3, 1, 1);
-plot(t,bpsk_AB_BC,'r');
+plot(t, x,'r');
 
+% function for making digital signals from bits
 function [signal, t] = makeSignal(bits)
 N = size(bits, 2);
 S = 100;
