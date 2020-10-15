@@ -1,4 +1,4 @@
-%morse code mapping 
+%morse code mapping(bit serialization)
 % alphabets
 A = [1 0 1 1 1];
 B = [1 1 1 0 1 0 1 0 1];
@@ -49,25 +49,30 @@ BC = cat(2, B, C);
 
 AB = [AB zeros(1, word_)];
 AB_BC = cat(2, AB, BC) % sentence "AB BC", we'll use this as our sentence.
-myWord = AB_BC;
-N = size(myWord, 2);
+mySentence = AB_BC;
+
 % bpsk modulation, changing 1 -> -1, 0 -> 1
 bpskModulator = comm.BPSKModulator;
 modData = bpskModulator(AB_BC');
-modData = real(modData');
-disp(modData)
+bpsk_AB_BC = real(modData');
+disp(bpsk_AB_BC);
 
-% creating signal
+% creating and showing bpsk modulated signal from a series of bits
+[bpsk_AB_BC, t] = makeSignal(bpsk_AB_BC);
+subplot(3, 1, 1);
+plot(t,bpsk_AB_BC,'r');
+
+function [signal, t] = makeSignal(bits)
+N = size(bits, 2);
 S = 100;
 i = 1;
 t = 0 : 1/S : N;
 for j=1:length(t)
     if t(j) <= i
-        signal(j) = modData(i);
+        signal(j) = bits(i);
     else 
-        signal(j) = modData(i);
+        signal(j) = bits(i);
         i = i + 1;
     end
 end
-subplot(3,1,1);
-plot(t,signal,'r');
+end

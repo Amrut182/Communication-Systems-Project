@@ -49,18 +49,33 @@ BC = cat(2, B, C);
 
 AB = [AB zeros(1, word_)];
 AB_BC = cat(2, AB, BC) % sentence "AB BC", we'll use this as our sentence.
-N = size(AB_BC);
-% % converting to 1 and -1 (polar NRZ)
-% x = [];
-% for i = 1:N
-%         if AB_BC(i) == 0
-%             x(i) = -1;
-%         else 
-%             x(i) = 1;
-%         end
-% end
-
+myWord = AB_BC;
+N = size(myWord, 2);
+% bpsk modulation, changing 1 -> -1, 0 -> 1
 bpskModulator = comm.BPSKModulator;
 modData = bpskModulator(AB_BC');
-disp(real(dataSymbols))
+modData = real(modData');
+disp(modData)
 
+% creating and showing bpsk modulated signal from a series of bits
+AB_BC_bpsk = makeSignal(AB_BC, 3, 1, 1);
+
+subplot(3, 1, 1);
+plot(t,signal,'r');
+AB_BC_bpsk = makeSignal(AB_BC, 3, 1, 1);
+AB = makeSignal(AB, 3, 1, 2);
+
+function [signal, t] = makeSignal(bits)
+N = size(bits, 2);
+S = 100;
+i = 1;
+t = 0 : 1/S : N;
+for j=1:length(t)
+    if t(j) <= i
+        signal(j) = bits(i);
+    else 
+        signal(j) = bits(i);
+        i = i + 1;
+    end
+end
+end
