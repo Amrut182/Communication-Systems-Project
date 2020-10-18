@@ -56,35 +56,36 @@ valueSet{1}; %Accessing content of cell array
 letterSpace = 3; % spacing between letters
 wordSpace = 7; % spacing between words
 
-% Letters array
-letters = []; % a array to store 100 letters
-for i = 1:100
-    % selecting random element from charSet
-    pos = randi(length(charSet));
-    letter = charSet(pos);
-    % appending random element to letters array
-    letters = [letters letter];
-end
+% start uncomment
+% % Letters array
+% letters = []; % a array to store 100 letters
+% for i = 1:100
+%     % selecting random element from charSet
+%     pos = randi(length(charSet));
+%     letter = charSet(pos);
+%     % appending random element to letters array
+%     letters = [letters letter];
+% end
+% 
+% % test
+% letters % array of 100 letters
+% sizeL = size(letters, 2)
+% letters(1)
+% % test
 
-% test
-letters % array of 100 letters
-sizeL = size(letters, 2)
-letters(1)
-% test
-
-% converting letters to bits
-letters_in_bits = [];
-for i = 1:length(letters)
-    letter_in_bit = Dict(letters(i));
-    letters_in_bits = [letters_in_bits letter_in_bit];
-    % padding with 3 zeroes(no padding after last letter, hence the if condition)
-    if(i ~= length(letters))
-        letters_in_bits = [letters_in_bits zeros(1, letterSpace)];
-    end
-end
+% % converting letters to bits
+% letters_in_bits = [];
+% for i = 1:length(letters)
+%     letter_in_bit = Dict(letters(i));
+%     letters_in_bits = [letters_in_bits letter_in_bit];
+%     % padding with 3 zeroes(no padding after last letter, hence the if condition)
+%     if(i ~= length(letters))
+%         letters_in_bits = [letters_in_bits zeros(1, letterSpace)];
+%     end
+% end
 
 %test
-letters_in_bits
+%letters_in_bits
 %test
 
 %*********MAIN CODE
@@ -102,7 +103,50 @@ letters_in_bits
 
 
 % AWGN noise addition
+% end of uncomment
 
+%start trial
+myLetter = [A B C D E];
+N=1000000;
+m=randi([0 1],1,N);
+myLetter = m;
+myLetter1 = m;
+% % bpsk modulation, changing 1 -> -1, 0 -> 1
+% bpskModulator = comm.BPSKModulator;
+% modData = bpskModulator(myLetter');
+% bpsk_myLetter= real(modData');
+
+myLetter = myLetter*(-2);
+myLetter = myLetter + 1;
+
+% creating and showing bpsk modulated signal from a series of bits
+% [bpsk_myLetter, t] = makeSignal(bpsk_myLetter);
+% x = bpsk_myLetter; % x is transmitted signal
+% subplot(3, 1, 1);
+% plot(t, x,'r');
+
+% Noise
+ber_sim = [];
+for  SNRdB = 1:1:15
+SNR=10^(SNRdB/10); %convert to normal scale
+sigma=sqrt(1/(2*SNR));
+% myLetter A = 10111
+r = myLetter + sigma.*randn(1, length(myLetter));
+m_cap = (r<0);
+% for i = 1:length(r)
+% if r(i)<0
+%     m_cap = 1;
+% else
+%     m_cap = 0;
+% end
+% end
+noe = sum(myLetter1~=m_cap);
+ber_sim1 = noe/length(myLetter);
+ber_sim = [ber_sim ber_sim1];  
+end
+SNRdB = 1:1:15;
+semilogy(SNRdB, ber_sim, 'r');
+%end trial
 
 % function for making digital signals from bits
 function [signal, t] = makeSignal(bits)
