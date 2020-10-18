@@ -1,4 +1,5 @@
-%morse code mapping(bit serialization)
+% morse code mapping(bit serialization)
+% making variables with the names corresponding to morse code value
 % alphabets
 A = [1 0 1 1 1];
 B = [1 1 1 0 1 0 1 0 1];
@@ -39,29 +40,70 @@ n8 = [1 1 1 0 1 1 1 0 1 1 1 0 1 0 1];
 n9 = [1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1];
 n0 = [1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1];
 
-letter_ = 3; % spacing between letters
-word_ = 7; % spacing between words
+% Entire character set 
+charSet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
-A=[A zeros(1, letter_)]; % padding with 3 zeros to join with another letter
-AB = cat(2, A, B); % created word AB
-B = [B zeros(1, letter_)];
-BC = cat(2, B, C);
+% making hash map
+keySet = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
+valueSet = {A, B, C, D, E, F, G, H, I , J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, n1, n2, n3, n4, n5, n6, n7, n8, n9, n0};
+Dict = containers.Map(keySet,valueSet);
 
-AB = [AB zeros(1, word_)];
-AB_BC = cat(2, AB, BC) % sentence "AB BC", we'll use this as our sentence.
-mySentence = AB_BC;
+% test
+Dict
+valueSet{1}; %Accessing content of cell array
+% test
 
-%********* MAIN CODE
+letterSpace = 3; % spacing between letters
+wordSpace = 7; % spacing between words
+
+% Letters array
+letters = []; % a array to store 100 letters
+for i = 1:100
+    % selecting random element from charSet
+    pos = randi(length(charSet));
+    letter = charSet(pos);
+    % appending random element to letters array
+    letters = [letters letter];
+end
+
+% test
+letters % array of 100 letters
+sizeL = size(letters, 2)
+letters(1)
+% test
+
+% converting letters to bits
+letters_in_bits = [];
+for i = 1:length(letters)
+    letter_in_bit = Dict(letters(i));
+    letters_in_bits = [letters_in_bits letter_in_bit];
+    % padding with 3 zeroes(no padding after last letter, hence the if
+    % condition)
+    if(i ~= 100)
+        letters_in_bits = [letters_in_bits zeros(1, letterSpace)];
+    end
+end
+
+%test
+letters_in_bits
+%test
+
+%*********MAIN CODE
 % bpsk modulation, changing 1 -> -1, 0 -> 1
-bpskModulator = comm.BPSKModulator;
-modData = bpskModulator(AB_BC');
-bpsk_AB_BC = real(modData');
-disp(bpsk_AB_BC);
+
 
 % creating and showing bpsk modulated signal from a series of bits
-[bpsk_AB_BC, t] = makeSignal(bpsk_AB_BC);
-subplot(3, 1, 1);
-plot(t,bpsk_AB_BC,'r');
+% [bpsk_myLetter, t] = makeSignal(bpsk_myLetter);
+%carrier = 2*cos(2*pi*2*t);
+%x = bpsk_myLetter.*carrier; % x is transmitted signal
+% x = bpsk_myLetter;
+% subplot(3, 1, 1);
+% plot(t, x,'r');
+% 
+
+
+% AWGN noise addition
+
 
 % function for making digital signals from bits
 function [signal, t] = makeSignal(bits)
