@@ -81,91 +81,30 @@ letters_nrz = cellfun(@(x) x+(1),letters_nrz,'un',0);
 % celldisp(letters_nrz);
 
 % Noise
-ber_final_sim = {};
+ler_final_sim = [];
 N = length(letters_nrz);
 
-for  SNR = 1:1:15
-    ber_sim = {};
-    for i=1:10
+for  SNR = 1:1:20
+    ler_sim = [];
+    for i=1:1000
 %         celldisp(letters_in_bits);
         received_signal = cellfun(@(x) awgn(x,SNR),letters_nrz,'un',0);
 %         celldisp(received_signal);
         decoded_signal = cellfun(@(x) fix(x*0 + (x<0)), received_signal, 'un', 0);
 %         celldisp(decoded_signal);
         noe = numerr(letters_in_bits, decoded_signal);
-        ber_sim1 = noe/N
-%         ber_sim = [ber_sim ber_sim1];  
+        ler_sim1 = noe/N;
+        ler_sim = [ler_sim ler_sim1];  
     end
-%     n = cell2mat(ber_sim);
-%     m = mean(ber_sim);
-%     ber_final_sim = [ber_final_sim m];
+    ler_final_sim = [ler_final_sim mean(ler_sim)];
 end
+% ler_final_sim
 
-% SNRdB = 1:1:15;
-% semilogy(SNRdB, ber_final_sim, 'r');
-
-
-% AWGN noise addition
-% end of uncomment
-
-% %start trial
-% myLetter = [A B C D E];
-% N=1000000;
-% m=randi([0 1],1,N);
-% myLetter = m;
-% myLetter1 = m;
-% % % bpsk modulation, changing 1 -> -1, 0 -> 1
-% % bpskModulator = comm.BPSKModulator;
-% % modData = bpskModulator(myLetter');
-% % bpsk_myLetter= real(modData');
-% 
-% myLetter = myLetter*(-2);
-% myLetter = myLetter + 1;
-% 
-% % creating and showing bpsk modulated signal from a series of bits
-% % [bpsk_myLetter, t] = makeSignal(bpsk_myLetter);
-% % x = bpsk_myLetter; % x is transmitted signal
-% % subplot(3, 1, 1);
-% % plot(t, x,'r');
-% 
-% % Noise
-% ber_sim = [];
-% for  SNRdB = 1:1:15
-% SNR=10^(SNRdB/10); %convert to normal scale
-% sigma=sqrt(1/(2*SNR));
-% % myLetter A = 10111
-% r = myLetter + sigma.*randn(1, length(myLetter));
-% m_cap = (r<0);
-% % for i = 1:length(r)
-% % if r(i)<0
-% %     m_cap = 1;
-% % else
-% %     m_cap = 0;
-% % end
-% % end
-% noe = sum(myLetter1~=m_cap);
-% ber_sim1 = noe/length(myLetter);
-% ber_sim = [ber_sim ber_sim1];  
-% end
-% SNRdB = 1:1:15;
-% semilogy(SNRdB, ber_sim, 'r');
-% %end trial
-
-% function for making digital signals from bits
-function [signal, t] = makeSignal(bits)
-    N = size(bits, 2);
-    S = 100;
-    i = 1;
-    t = 0 : 1/S : N;
-    for j=1:length(t)
-        if t(j) <= i
-            signal(j) = bits(i);
-        else 
-            signal(j) = bits(i);
-            i = i + 1;
-        end
-    end
-end
+SNR = 1:1:20;
+% subplot(3,1,2);
+plot(SNR, ler_final_sim, 'r');
+ylabel('Letter Error Rate');
+xlabel('SNR');
 
 function [noe] = numerr(A, B)
     noe = 0;
