@@ -5,7 +5,7 @@
 A = [1 0 1 1 1];
 B = [1 1 1 0 1 0 1 0 1];
 C = [1 1 1 0 1 0 1 1 1 0 1];
-D = [1 1 1 0 1 1 1 0 1];
+D = [1 1 1 0 1 0 1];
 E = [1];
 F = [1 0 1 0 1 1 1 0 1];
 G = [1 1 1 0 1 1 1 0 1];
@@ -40,19 +40,17 @@ n7 = [1 1 1 0 1 1 1 0 1 0 1 0 1];
 n8 = [1 1 1 0 1 1 1 0 1 1 1 0 1 0 1];
 n9 = [1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1];
 n0 = [1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1];
+space = [0 0 0 0 0 0 0];
 
 % Entire character set 
 charSet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
 % making hash map
-keySet = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
-valueSet = {A, B, C, D, E, F, G, H, I , J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, n1, n2, n3, n4, n5, n6, n7, n8, n9, n0};
+keySet = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' '};
+valueSet = {A, B, C, D, E, F, G, H, I , J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, n1, n2, n3, n4, n5, n6, n7, n8, n9, n0, space};
 map = containers.Map(keySet,valueSet);
-
 letterSpace = 3; % spacing between letters
 wordSpace = 7; % spacing between words
-
-myMessage = "My name is Amrut";
 
 % LETTER ERROR RATE
 % cell array where each cell is a letter
@@ -109,6 +107,66 @@ myWords_mod= cellfun(@(x) x+(1),myWords_mod,'un',0);
 
 % Make Word Error Rate Graph
 WER = makeErrorRateGraph(myWords_in_bits, myWords_mod, 2, 'Word Error Rate');
+
+%------------
+% Sending a custom input, and decoding it.
+myMessage = 'the quick brown fox jumped over the lazy dog'
+myMessage = split(myMessage);
+myMessage= upper(myMessage);
+N = length(myMessage);
+
+bits = {};
+for i = 1:N
+    for j =1:length(myMessage{i})
+        char = map(myMessage{i}(j));      
+        bits{end+1} = char;
+        if(j ~= length(myMessage{i}))
+            bits{end+1} = zeros(1, letterSpace);
+        end
+    end
+    if(i ~= N)
+        bits{end+1} = zeros(1, wordSpace);
+    end
+end
+
+% bpsk modulation
+myMessage_mod= cellfun(@(x) x*(-2),bits,'un',0);
+myMessage_mod= cellfun(@(x) x+(1),myMessage_mod,'un',0);
+
+% NOISE
+SNR = 5;
+invalid_char = '?';
+received_signal = cellfun(@(x) awgn(x,SNR),myMessage_mod,'un',0);
+decoded_signal_in_bits = cellfun(@(x) fix(x*0 + (x<0)), received_signal, 'un', 0);
+decoded_signal = [];
+final_msg = [];
+temp = {};
+
+for i = 1:length(decoded_signal_in_bits)
+    hasMatch = any(cellfun(@isequal, valueSet, repmat({decoded_signal_in_bits{i}}, size(valueSet))));
+    if mod(i,2) == 1 % odd indexes have characters
+        if hasMatch == 1
+            for j =1:length(keySet)
+                if isequal(map(keySet{j}), decoded_signal_in_bits{i})
+                    temp{end+1} = keySet{j};
+                    break;
+                end
+            end
+        else
+            temp{end+1} = invalid_char;
+        end
+    else % even indexes have only letter spaces and word spaces
+        if isequal(decoded_signal_in_bits{i}, [0 0 0 0 0 0 0])
+            temp{end+1} = ' ';
+        else
+            if ~isequal(decoded_signal_in_bits{i}, [0 0 0])
+                temp{end+1} = invalid_char;
+            end
+        end
+    end 
+end
+
+final_decoded_message = cell2mat(temp) % the final message will be in capitals
 
 % FUNCTION DEFINITIONS
 function [noe] = numerr(A, B)
