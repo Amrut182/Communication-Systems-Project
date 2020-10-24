@@ -80,6 +80,9 @@ for a = 1:1:5
                 for i = 1:length(receivedSignal(:,1))% loop through all rows
                 % if energy of x component is lesser than energy of y
                 % component, then it is demodulated as [0 a]
+                % we know that the received signal is more likely to be [0
+                % a] if the energy of 2nd component is greater than 1st
+                % component
                  if (receivedSignal(i,1).^2) < (receivedSignal(i,2).^2) %checking energies
                     demodulatedSignal(i, 1) = 0;
                     demodulatedSignal(i, 2) = a;
